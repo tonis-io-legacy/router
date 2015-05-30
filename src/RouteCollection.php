@@ -6,15 +6,10 @@ use Psr\Http\Message\RequestInterface;
 
 final class RouteCollection
 {
-    /** @var \ArrayObject */
-    private $routes;
+    /** @var Route[] */
+    private $routes = [];
     /** @var RouteMatch */
     private $lastMatch;
-
-    public function __construct()
-    {
-        $this->routes = new \ArrayObject();
-    }
 
     /**
      * @return \ArrayObject
@@ -25,31 +20,25 @@ final class RouteCollection
     }
 
     /**
-     * @param string $name
      * @param string $path
      * @param null $handler
      * @return $this
      */
-    public function get($name, $path, $handler)
+    public function get($path, $handler)
     {
-        return $this->add($name, $path, $handler)->methods(['GET']);
+        return $this->add($path, $handler)->methods(['GET']);
     }
 
     /**
-     * @param string|null $name
      * @param string $path
      * @param mixed $handler
      * @return Route
      * @throws Exception\RouteExistsException
      */
-    public function add($name, $path, $handler)
+    public function add($path, $handler)
     {
-        if (null !== $name && $this->routes->offsetExists($name)) {
-            throw new Exception\RouteExistsException($name);
-        }
-
-        $route = new Route($name, $path, $handler);
-        $this->routes[$name] = $route;
+        $route = new Route($path, $handler);
+        $this->routes[] = $route;
 
         return $route;
     }
@@ -78,7 +67,7 @@ final class RouteCollection
      */
     public function assemble($name, array $params = [])
     {
-        if (!$this->routes->offsetExists($name)) {
+        if (!isset($this->routes[$name])) {
             throw new Exception\RouteDoesNotExistException($name);
         }
 

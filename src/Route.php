@@ -7,8 +7,6 @@ use Psr\Http\Message\RequestInterface;
 final class Route
 {
     /** @var string */
-    private $name;
-    /** @var string */
     private $path;
     /** @var mixed */
     private $handler;
@@ -24,13 +22,11 @@ final class Route
     protected $tokens;
 
     /**
-     * @param string $name
      * @param string $path
      * @param string $handler
      */
-    public function __construct($name, $path, $handler)
+    public function __construct($path, $handler)
     {
-        $this->name = $name;
         $this->path = $path;
         $this->handler = $handler;
     }
@@ -99,14 +95,6 @@ final class Route
             return new RouteMatch($this, array_merge($this->defaults, $matches));
         }
         return null;
-    }
-
-    /**
-     * @return string
-     */
-    public function getName()
-    {
-        return $this->name;
     }
 
     /**
