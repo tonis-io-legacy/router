@@ -1,5 +1,4 @@
 <?php
-
 namespace Tonis\Router;
 
 use Psr\Http\Message\RequestInterface;
@@ -45,7 +44,7 @@ final class Route
                 if ($optional || isset($params[$name])) {
                     continue;
                 }
-                throw new Exception\MissingParameterException($this->getName(), $name);
+                throw new Exception\MissingParameterException($this->getPath(), $name);
             }
         }
         $replace = function ($matches) use ($params) {
@@ -57,18 +56,29 @@ final class Route
         return preg_replace_callback('@{([^A-Za-z]*)([A-Za-z]+)[?]?(?::[^}]+)?}@', $replace, $this->path);
     }
 
-    public function accept(array $accept)
+    /**
+     * @param array $accept
+     * @return $this
+     */
+    public function accepts(array $accept)
     {
         $this->accept = $accept;
         return $this;
     }
 
-    public function defaults(array $defaults)
+    /**
+     * @param array $defaults
+     */
+    public function withDefaults(array $defaults)
     {
         $this->defaults = $defaults;
     }
 
-    public function methods(array $methods)
+    /**
+     * @param array $methods
+     * @return $this
+     */
+    public function withMethods(array $methods)
     {
         foreach ($methods as &$method) {
             $method = strtoupper($method);
@@ -77,6 +87,10 @@ final class Route
         return $this;
     }
 
+    /**
+     * @param RequestInterface $request
+     * @return null|RouteMatch
+     */
     public function match(RequestInterface $request)
     {
         $this->init();

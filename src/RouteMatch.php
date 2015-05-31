@@ -1,5 +1,4 @@
 <?php
-
 namespace Tonis\Router;
 
 final class RouteMatch

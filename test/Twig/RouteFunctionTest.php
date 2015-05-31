@@ -15,7 +15,7 @@ class RouteFunctionTest extends \PHPUnit_Framework_TestCase
     public function testInvoke()
     {
         $router = new RouteCollection();
-        $router->add('foo', '/foo');
+        $router->add('/foo', 'handler', 'foo');
 
         $f = new RouteFunction($router, 'foo');
         $this->assertSame($router->assemble('foo'), $f('foo'));

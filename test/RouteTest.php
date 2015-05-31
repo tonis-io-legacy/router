@@ -1,7 +1,8 @@
 <?php
 
 namespace Tonis\Router;
-use Phly\Http\ServerRequestFactory;
+
+use Zend\Diactoros\ServerRequestFactory;
 
 /**
  * @coversDefaultClass Tonis\Router\Route
@@ -9,22 +10,12 @@ use Phly\Http\ServerRequestFactory;
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @covers ::getName()
-     */
-    public function testGetName()
-    {
-        $name = 'foo';
-        $route = new Route($name, '/foo');
-        $this->assertSame($name, $route->getName());
-    }
-
-    /**
      * @covers ::getPath()
      */
     public function testGetPath()
     {
         $path = '/foo';
-        $route = new Route('foo', $path);
+        $route = new Route($path, 'handler');
         $this->assertSame($path, $route->getPath());
     }
 
@@ -54,8 +45,8 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testMatchWithMethods()
     {
-        $r = new Route('foo', '/foobar');
-        $r->methods(['get']);
+        $r = new Route('/foobar', 'handler');
+        $r->withMethods(['get']);
 
         $this->assertNull($r->match($this->newRequest('/foobar', ['REQUEST_METHOD' => 'POST'])));
         $this->assertInstanceOf(
@@ -70,7 +61,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testMatchReturnsRouteMatch()
     {
-        $route = new Route('foo', '/foo/{id}');
+        $route = new Route('/foo/{id}', 'handler');
         $match = $route->match($this->newRequest('/foo/bar'));
 
         $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
@@ -84,7 +75,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testMatchWithConstraints()
     {
-        $route = new Route('foo', '/foo/{id:\d+}');
+        $route = new Route('/foo/{id:\d+}', 'handler');
         $this->assertNull($route->match($this->newRequest('/foo/bar')));
 
         $match = $route->match($this->newRequest('/foo/1234'));
@@ -99,7 +90,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testMatchWithOptionalTokens()
     {
-        $route = new Route('foo', '/foo/{id:\d+}{-slug?}');
+        $route = new Route('/foo/{id:\d+}{-slug?}', 'handler');
 
         $match = $route->match($this->newRequest('/foo/1'));
         $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
@@ -117,11 +108,11 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      * @covers ::init
      * @covers \Tonis\Router\Exception\MissingParameterException::__construct
      * @expectedException \Tonis\Router\Exception\MissingParameterException
-     * @expectedExceptionMessage Cannot assemble route "foo": missing required parameter "id"
+     * @expectedExceptionMessage Cannot assemble route "/foo/{id}": missing required parameter "id"
      */
     public function testAssembleThrowsExceptionOnMissingRequiredParameter()
     {
-        $route = new Route('foo', '/foo/{id}');
+        $route = new Route('/foo/{id}', 'handler');
         $route->assemble();
     }
 
@@ -130,7 +121,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testAssembleWithNoTokens()
     {
-        $route = new Route('foo', '/foo');
+        $route = new Route('/foo', 'handler');
         $this->assertSame('/foo', $route->assemble());
     }
 
@@ -139,7 +130,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testAssemble()
     {
-        $route = new Route('foo', '/foo/{name}');
+        $route = new Route('/foo/{name}', 'handler');
         $this->assertSame('/foo/bar', $route->assemble(['name' => 'bar']));
     }
 
@@ -149,13 +140,13 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testAssembleWithOptionalParams()
     {
-        $route = new Route('foo', '/foo/{id?}');
+        $route = new Route('/foo/{id?}', 'handler');
         $this->assertSame('/foo/', $route->assemble());
 
-        $route = new Route('foo', '/foo{/id?}');
+        $route = new Route('/foo{/id?}', 'handler');
         $this->assertSame('/foo', $route->assemble());
 
-        $route = new Route('foo', '/foo/{id:\d+}{-slug?}');
+        $route = new Route('/foo/{id:\d+}{-slug?}', 'handler');
         $this->assertSame('/foo/1', $route->assemble(['id' => 1]));
         $this->assertSame('/foo/1-test', $route->assemble(['id' => 1, 'slug' => 'test']));
     }
@@ -163,26 +154,26 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @cowers ::match
      * @covers ::init
-     * @covers ::setDefaults
+     * @covers ::withDefaults
      */
     public function testMatchWithDefaults()
     {
-        $route = new Route('foo', '/foo');
-        $route->defaults(['controller' => 'foo']);
+        $route = new Route('/foo', 'handler');
+        $route->withDefaults(['controller' => 'foo']);
 
         $match = $route->match($this->newRequest('/foo'));
         $this->assertSame('foo', $match->getParam('controller'));
     }
 
     /**
-     * @covers ::defaults
+     * @covers ::withDefaults
      */
     public function testRouteDefaults()
     {
         $defaults = ['controller' => 'foo'];
 
-        $route = new Route('foo', '/foo');
-        $route->defaults($defaults);
+        $route = new Route('/foo', 'handler');
+        $route->withDefaults($defaults);
 
         $refl = new \ReflectionClass($route);
         $defs = $refl->getProperty('defaults');
@@ -194,7 +185,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     /**
      * @param string $path
      * @param array $server
-     * @return \Phly\Http\ServerRequest
+     * @return mixed
      */
     protected function newRequest($path, array $server = [])
     {

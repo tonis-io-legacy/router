@@ -19,9 +19,9 @@ class RouterMatchTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::set
+     * @covers ::setParam
      */
-    public function testsetParam()
+    public function testSetParam()
     {
         $route = new Route('foo', '/foo');
         $match = new RouteMatch($route);
@@ -30,9 +30,9 @@ class RouterMatchTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::get
+     * @covers ::getParam
      */
-    public function testgetParam()
+    public function testGetParam()
     {
         $route = new Route('foo', '/foo');
         $match = new RouteMatch($route, ['id' => 1]);
@@ -42,7 +42,7 @@ class RouterMatchTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::get
+     * @covers ::getParam
      */
     public function testGetWithDefault()
     {
@@ -52,7 +52,8 @@ class RouterMatchTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getParams, ::setParams
+     * @covers ::getParams
+     * @covers ::setParams
      */
     public function testSetGetParams()
     {

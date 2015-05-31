@@ -1,5 +1,4 @@
 <?php
-
 namespace Tonis\Router\Twig;
 
 use Tonis\Router\RouteCollection;

@@ -1,5 +1,4 @@
 <?php
-
 namespace Tonis\Router\Exception;
 
 class MissingParameterException extends \InvalidArgumentException
