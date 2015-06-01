@@ -23,6 +23,14 @@ final class Collection
     }
 
     /**
+     * @return null|Match
+     */
+    public function getLastMatch()
+    {
+        return $this->lastMatch;
+    }
+
+    /**
      * @return Route[]
      */
     public function getRoutes()
