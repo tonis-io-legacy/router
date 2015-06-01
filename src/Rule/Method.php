@@ -1,7 +1,7 @@
 <?php
 namespace Tonis\Router\Rule;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\RequestInterface;
 use Tonis\Router\Match;
 
 class Method implements RuleInterface
@@ -9,7 +9,7 @@ class Method implements RuleInterface
     /**
      * {@inheritDoc}
      */
-    public function __invoke(ServerRequestInterface $request, Match $match)
+    public function __invoke(RequestInterface $request, Match $match)
     {
         $route = $match->getRoute();
         $methods = $route->getMethods();
