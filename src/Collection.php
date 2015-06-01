@@ -131,14 +131,12 @@ final class Collection
         }
 
         $route = $this->routes[$name];
-        if ($route->getTokens()) {
-            foreach ($route->getTokens() as $token) {
-                list($name, $optional) = $token;
-                if ($optional || isset($params[$name])) {
-                    continue;
-                }
-                throw new Exception\MissingParameterException($route->getPath(), $name);
+        foreach ($route->getTokens() as $token) {
+            list($name, $optional) = $token;
+            if ($optional || isset($params[$name])) {
+                continue;
             }
+            throw new Exception\MissingParameterException($route->getPath(), $name);
         }
         $replace = function ($matches) use ($params) {
             if (isset($params[$matches[2]])) {

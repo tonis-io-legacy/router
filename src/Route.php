@@ -17,7 +17,7 @@ final class Route
     private $regex;
     /** @var null|bool */
     private $secure = null;
-    /** @var null|\SplFixedArray */
+    /** @var \SplFixedArray */
     protected $tokens;
 
     /**
@@ -26,8 +26,9 @@ final class Route
      */
     public function __construct($path, $handler)
     {
-        $this->path = $path;
         $this->handler = $handler;
+        $this->path = $path;
+        $this->tokens = new \SplFixedArray();
     }
 
     /**
