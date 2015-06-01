@@ -1,8 +1,8 @@
 # Tonis\Router
 
-[![Build Status](https://travis-ci.org/spiffyjr/spiffy-route.svg)](https://travis-ci.org/spiffyjr/spiffy-route)
-[![Code Coverage](https://scrutinizer-ci.com/g/spiffyjr/spiffy-route/badges/coverage.png?s=1b7dca9d06b1fd7329a6bf9c10fefa552d4be863)](https://scrutinizer-ci.com/g/spiffyjr/spiffy-route/)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/spiffyjr/spiffy-route/badges/quality-score.png?s=b3a343fc3a2b1ea7fd244499e29ec28d71693fa2)](https://scrutinizer-ci.com/g/spiffyjr/spiffy-route/)
+[![Build Status](https://scrutinizer-ci.com/g/tonis-io/router/badges/build.png?b=master)](https://scrutinizer-ci.com/g/tonis-io/router/build-status/master)
+[![Code Coverage](https://scrutinizer-ci.com/g/tonis-io/router/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/tonis-io/router/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/tonis-io/router/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/tonis-io/router/?branch=master)
 
 ## Installation
 Tonis\Router can be installed using composer which will setup any autoloading for you.
