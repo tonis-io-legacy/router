@@ -16,6 +16,8 @@ final class Collection
     public function __construct()
     {
         $this->rules = [
+            new Rule\Secure,
+            new Rule\Method(),
             new Rule\Path()
         ];
     }

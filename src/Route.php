@@ -10,11 +10,13 @@ final class Route
     /** @var array */
     private $defaults = [];
     /** @var array */
-    private $accept = [];
+    private $accepts = ['*'];
     /** @var array */
-    private $methods = ['GET'];
+    private $methods = [];
     /** @var string */
     private $regex;
+    /** @var null|bool */
+    private $secure = null;
     /** @var null|\SplFixedArray */
     protected $tokens;
 
@@ -47,12 +49,22 @@ final class Route
     }
 
     /**
-     * @param array $accept
+     * @param bool $secure
      * @return $this
      */
-    public function accepts(array $accept)
+    public function secure($secure)
     {
-        $this->accept = $accept;
+        $this->secure = (bool) $secure;
+        return $this;
+    }
+
+    /**
+     * @param array $accepts
+     * @return $this
+     */
+    public function accepts(array $accepts)
+    {
+        $this->accepts = $accepts;
         return $this;
     }
 
@@ -78,6 +90,14 @@ final class Route
     }
 
     /**
+     * @return bool|null
+     */
+    public function getSecure()
+    {
+        return $this->secure;
+    }
+
+    /**
      * @return array
      */
     public function getDefaults()
@@ -88,9 +108,9 @@ final class Route
     /**
      * @return array
      */
-    public function getAccept()
+    public function getAccepts()
     {
-        return $this->accept;
+        return $this->accepts;
     }
 
     /**

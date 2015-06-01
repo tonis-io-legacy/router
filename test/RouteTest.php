@@ -28,7 +28,6 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     public function testGetHandler()
     {
         $callable = function () {
-
         };
 
         $route = new Route('/foo', $callable);
@@ -39,13 +38,50 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      * @covers ::getDefaults
      * @covers ::defaults
      */
-    public function testRouteWithDefaults()
+    public function testDefaults()
     {
         $defaults = ['controller' => 'foo'];
 
         $route = new Route('/foo', 'handler');
+        $this->assertEmpty($route->getDefaults());
         $route->defaults($defaults);
         $this->assertSame($defaults, $route->getDefaults());
+    }
+
+    /**
+     * @covers ::getSecure
+     * @covers ::secure
+     */
+    public function testSecure()
+    {
+        $route = new Route('/foo', 'handler');
+        $this->assertNull($route->getSecure());
+        $route->secure(true);
+        $this->assertTrue($route->getSecure());
+    }
+
+    /**
+     * @covers ::getAccepts
+     * @covers ::accepts
+     */
+    public function testAccepts()
+    {
+        $route = new Route('/foo', 'handler');
+        $this->assertSame(['*'], $route->getAccepts());
+        $route->accepts(['application/json']);
+        $this->assertSame(['application/json'], $route->getAccepts());
+    }
+
+    /**
+     * @covers ::getMethods
+     * @covers ::methods
+     */
+    public function testMethods()
+    {
+        $route = new Route('/foo', 'handler');
+        $this->assertEmpty($route->getMethods());
+        $route->methods(['GET', 'POST']);
+        $this->assertSame(['GET', 'POST'], $route->getMethods());
     }
 
     /**

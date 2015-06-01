@@ -108,13 +108,62 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::assemble
      */
-    public function testAssemblingRoutes()
+    public function testAssemble()
     {
         $routes = new Collection();
         $routes->add('/foo', 'handler', 'foo');
         $this->assertSame('/foo', $routes->assemble('foo'));
     }
 
+    /**
+     * @covers ::assemble
+     * @covers \Tonis\Router\Exception\RouteDoesNotExistException::__construct
+     * @expectedException \Tonis\Router\Exception\RouteDoesNotExistException
+     * @expectedExceptionMessage The route with name "foo" does not exist
+     */
+    public function testAssembleThrowsExceptionForMissingRoute()
+    {
+        $routes = new Collection();
+        $routes->assemble('foo');
+    }
+
+    /**
+     * @covers ::assemble
+     */
+    public function testAssembleWithParams()
+    {
+        $routes = new Collection();
+        $routes->add('/foo/{bar}/{baz}', 'handler', 'foo');
+        $this->assertSame('/foo/1/2', $routes->assemble('foo', ['bar' => 1, 'baz' => 2]));
+    }
+
+    /**
+     * @covers ::assemble
+     * @covers \Tonis\Router\Exception\MissingParameterException::__construct
+     * @expectedException \Tonis\Router\Exception\MissingParameterException
+     * @expectedExceptionMessage Cannot assemble route "/foo/{bar}": missing required parameter "bar"
+     */
+    public function testAssembleWithParamsThrowsExceptionIfMissingParam()
+    {
+        $routes = new Collection();
+        $routes->add('/foo/{bar}', 'handler', 'foo');
+        $routes->assemble('foo');
+    }
+
+    /**
+     * @covers ::assemble
+     */
+    public function testAssembleWithOptionalParams()
+    {
+        $routes = new Collection();
+        $routes->add('/foo{/bar?}', 'handler', 'foo');
+        $this->assertSame('/foo', $routes->assemble('foo'));
+        $this->assertSame('/foo/baz', $routes->assemble('foo', ['bar' => 'baz']));
+    }
+
+    /**
+     * @covers ::assemble
+     */
     public function httpMethodProvider()
     {
         return [
