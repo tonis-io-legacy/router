@@ -15,7 +15,7 @@ matrix:
 
 before_script:
     - composer self-update
-    - composer update --prefer-dist
+    - composer install --prefer-source --no-interaction
 
 script:
     - cd $TRAVIS_BUILD_DIR
