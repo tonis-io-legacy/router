@@ -17,6 +17,7 @@ class Secure implements RuleInterface
             return true;
         }
 
-        return false;
+        $uri = $request->getUri();
+        return $route->getSecure() == ($uri->getScheme() === 'https' || $uri->getPort() == 443);
     }
 }
