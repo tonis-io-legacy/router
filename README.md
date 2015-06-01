@@ -7,7 +7,7 @@
 ## Installation
 Tonis\Router can be installed using composer which will setup any autoloading for you.
 
-`composer require spiffy/spiffy-route`
+`composer require tonis-io/router`
 
 Additionally, you can download or clone the repository and setup your own autoloading.
 
