@@ -1,19 +1,22 @@
 <?php
 namespace Tonis\Router;
 
-use Zend\Diactoros\ServerRequestFactory;
+use Tonis\Router\TestAsset\NewRequestTrait;
 
 /**
- * @coversDefaultClass \Tonis\Router\RouteCollection
+ * @coversDefaultClass \Tonis\Router\Collection
  */
-class RouteCollectionTest extends \PHPUnit_Framework_TestCase
+class CollectionTest extends \PHPUnit_Framework_TestCase
 {
+    use NewRequestTrait;
+
     /**
+     * @covers ::__construct
      * @covers ::add
      */
-    public function testAddingUnamedRoutes()
+    public function testAddingUnnamedRoutes()
     {
-        $collection = new RouteCollection();
+        $collection = new Collection();
         $collection->add('/foo', 'handler');
         $collection->add('/bar', 'handler');
 
@@ -24,15 +27,38 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::get
+     * @covers ::post
+     * @covers ::patch
+     * @covers ::delete
+     * @covers ::put
+     * @covers ::addWithMethod
+     * @covers ::getRoutes
+     * @dataProvider httpMethodProvider
+     *
+     * @param string $method
+     */
+    public function testHttpMethods($method)
+    {
+        $collection = new Collection();
+        $collection->{$method}('/foo', 'handler');
+
+        $collection2 = new Collection();
+        $collection2->add('/foo', 'handler', null)->methods([$method]);
+
+        $this->assertEquals($collection->getRoutes(), $collection2->getRoutes());
+    }
+
+    /**
      * @covers ::add
      */
     public function testAddingNamedRoutes()
     {
-        $collection = new RouteCollection();
+        $collection = new Collection();
         $collection->add('/foo', 'handler', 'foo');
         $collection->add('/bar', 'handler', 'bar');
 
-        $namedRoutes = $this->getNamedRoutesFromCollection($collection);
+        $namedRoutes = $this->getRoutesFromCollection($collection);
 
         $this->assertInternalType('array', $namedRoutes);
         $this->assertArrayHasKey('foo', $namedRoutes);
@@ -47,22 +73,23 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddingSameRouteNameThrowsException()
     {
-        $collection = new RouteCollection();
+        $collection = new Collection();
         $collection->add('/foo', 'handler', 'foo');
         $collection->add('/foo2', 'handler', 'foo');
     }
 
     /**
+     * @covers ::matchRoute
      * @covers ::match
      */
     public function testMatchingRoutes()
     {
-        $collection = new RouteCollection();
+        $collection = new Collection();
         $collection->add('/foo', 'handler');
         $collection->add('/bar', 'handler');
 
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $collection->match($this->newRequest('/bar')));
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $collection->match($this->newRequest('/foo')));
+        $this->assertInstanceOf('Tonis\Router\Match', $collection->match($this->newRequest('/bar')));
+        $this->assertInstanceOf('Tonis\Router\Match', $collection->match($this->newRequest('/foo')));
         $this->assertNull($collection->match($this->newRequest('/does/not/exist')));
     }
 
@@ -74,7 +101,7 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testAssembleThrowsExceptionOnInvalidRouteName()
     {
-        $routes = new RouteCollection();
+        $routes = new Collection();
         $routes->assemble('foo');
     }
 
@@ -83,45 +110,30 @@ class RouteCollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testAssemblingRoutes()
     {
-        $routes = new RouteCollection();
+        $routes = new Collection();
         $routes->add('/foo', 'handler', 'foo');
         $this->assertSame('/foo', $routes->assemble('foo'));
     }
 
-    /**
-     * @param string $path
-     * @param array $server
-     * @return \Zend\Diactoros\ServerRequest
-     */
-    protected function newRequest($path, array $server = [])
+    public function httpMethodProvider()
     {
-        $server['REQUEST_URI'] = $path;
-        $server = array_merge($_SERVER, $server);
-
-        return ServerRequestFactory::fromGlobals($server);
+        return [
+            ['GET'],
+            ['POST'],
+            ['PUT'],
+            ['DELETE'],
+            ['PATCH'],
+        ];
     }
 
     /**
-     * @param RouteCollection $collection
+     * @param Collection $collection
      * @return Route[]
      */
-    protected function getRoutesFromCollection(RouteCollection $collection)
+    protected function getRoutesFromCollection(Collection $collection)
     {
         $refl = new \ReflectionClass($collection);
         $routes = $refl->getProperty('routes');
-        $routes->setAccessible(true);
-
-        return $routes->getValue($collection);
-    }
-
-    /**
-     * @param RouteCollection $collection
-     * @return Route[]
-     */
-    protected function getNamedRoutesFromCollection(RouteCollection $collection)
-    {
-        $refl = new \ReflectionClass($collection);
-        $routes = $refl->getProperty('namedRoutes');
         $routes->setAccessible(true);
 
         return $routes->getValue($collection);

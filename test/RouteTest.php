@@ -2,14 +2,17 @@
 
 namespace Tonis\Router;
 
-use Zend\Diactoros\ServerRequestFactory;
+use Tonis\Router\TestAsset\NewRequestTrait;
 
 /**
  * @coversDefaultClass Tonis\Router\Route
  */
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
+    use NewRequestTrait;
+
     /**
+     * @covers ::__construct
      * @covers ::getPath()
      */
     public function testGetPath()
@@ -20,177 +23,89 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::init
-     * @covers ::match
+     * @covers ::getHandler
      */
-    public function testNoMatch()
+    public function testGetHandler()
     {
-        $route = new Route('foo', '/bar');
-        $this->assertNull($route->match($this->newRequest('/foo')));
+        $callable = function () {
+
+        };
+
+        $route = new Route('/foo', $callable);
+        $this->assertSame($callable, $route->getHandler());
     }
 
     /**
-     * @covers ::init
-     * @covers ::match
+     * @covers ::getDefaults
+     * @covers ::defaults
      */
-    public function testNoMatchForRegexEndOfLine()
-    {
-        $route = new Route('foo', '/foobar');
-        $this->assertNull($route->match($this->newRequest('/foo')));
-    }
-
-    /**
-     * @covers ::init
-     * @covers ::match
-     */
-    public function testMatchWithMethods()
-    {
-        $r = new Route('/foobar', 'handler');
-        $r->withMethods(['get']);
-
-        $this->assertNull($r->match($this->newRequest('/foobar', ['REQUEST_METHOD' => 'POST'])));
-        $this->assertInstanceOf(
-            'Tonis\Router\RouteMatch',
-            $r->match($this->newRequest('/foobar', ['REQUEST_METHOD' => 'GET']))
-        );
-    }
-
-    /**
-     * @covers ::init
-     * @covers ::match
-     */
-    public function testMatchReturnsRouteMatch()
-    {
-        $route = new Route('/foo/{id}', 'handler');
-        $match = $route->match($this->newRequest('/foo/bar'));
-
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
-        $this->assertSame($route, $match->getRoute());
-        $this->assertSame('bar', $match->getParam('id'));
-    }
-
-    /**
-     * @covers ::init
-     * @covers ::match
-     */
-    public function testMatchWithConstraints()
-    {
-        $route = new Route('/foo/{id:\d+}', 'handler');
-        $this->assertNull($route->match($this->newRequest('/foo/bar')));
-
-        $match = $route->match($this->newRequest('/foo/1234'));
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
-        $this->assertSame($route, $match->getRoute());
-        $this->assertSame('1234', $match->getParam('id'));
-    }
-
-    /**
-     * @covers ::init
-     * @covers ::match
-     */
-    public function testMatchWithOptionalTokens()
-    {
-        $route = new Route('/foo/{id:\d+}{-slug?}', 'handler');
-
-        $match = $route->match($this->newRequest('/foo/1'));
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
-        $this->assertSame('1', $match->getParam('id'));
-        $this->assertEmpty($match->getParam('slug'));
-
-        $match = $route->match($this->newRequest('/foo/1-testing'));
-        $this->assertInstanceOf('Tonis\Router\RouteMatch', $match);
-        $this->assertSame('1', $match->getParam('id'));
-        $this->assertSame('testing', $match->getParam('slug'));
-    }
-
-    /**
-     * @covers ::assemble
-     * @covers ::init
-     * @covers \Tonis\Router\Exception\MissingParameterException::__construct
-     * @expectedException \Tonis\Router\Exception\MissingParameterException
-     * @expectedExceptionMessage Cannot assemble route "/foo/{id}": missing required parameter "id"
-     */
-    public function testAssembleThrowsExceptionOnMissingRequiredParameter()
-    {
-        $route = new Route('/foo/{id}', 'handler');
-        $route->assemble();
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function testAssembleWithNoTokens()
-    {
-        $route = new Route('/foo', 'handler');
-        $this->assertSame('/foo', $route->assemble());
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function testAssemble()
-    {
-        $route = new Route('/foo/{name}', 'handler');
-        $this->assertSame('/foo/bar', $route->assemble(['name' => 'bar']));
-    }
-
-    /**
-     * @covers ::assemble
-     * @covers ::init
-     */
-    public function testAssembleWithOptionalParams()
-    {
-        $route = new Route('/foo/{id?}', 'handler');
-        $this->assertSame('/foo/', $route->assemble());
-
-        $route = new Route('/foo{/id?}', 'handler');
-        $this->assertSame('/foo', $route->assemble());
-
-        $route = new Route('/foo/{id:\d+}{-slug?}', 'handler');
-        $this->assertSame('/foo/1', $route->assemble(['id' => 1]));
-        $this->assertSame('/foo/1-test', $route->assemble(['id' => 1, 'slug' => 'test']));
-    }
-
-    /**
-     * @cowers ::match
-     * @covers ::init
-     * @covers ::withDefaults
-     */
-    public function testMatchWithDefaults()
-    {
-        $route = new Route('/foo', 'handler');
-        $route->withDefaults(['controller' => 'foo']);
-
-        $match = $route->match($this->newRequest('/foo'));
-        $this->assertSame('foo', $match->getParam('controller'));
-    }
-
-    /**
-     * @covers ::withDefaults
-     */
-    public function testRouteDefaults()
+    public function testRouteWithDefaults()
     {
         $defaults = ['controller' => 'foo'];
 
         $route = new Route('/foo', 'handler');
-        $route->withDefaults($defaults);
-
-        $refl = new \ReflectionClass($route);
-        $defs = $refl->getProperty('defaults');
-        $defs->setAccessible(true);
-
-        $this->assertSame($defaults, $defs->getValue($route));
+        $route->defaults($defaults);
+        $this->assertSame($defaults, $route->getDefaults());
     }
 
     /**
-     * @param string $path
-     * @param array $server
-     * @return mixed
+     * @covers ::init
+     * @covers ::getRegex
+     * @covers ::getTokens
      */
-    protected function newRequest($path, array $server = [])
+    public function testRegex()
     {
-        $server['REQUEST_URI'] = $path;
-        $server = array_merge($_SERVER, $server);
-        return ServerRequestFactory::fromGlobals($server);
+        $route = new Route('/foo/{id}/{name}/{date}', 'handler');
+        $regex = $route->getRegex();
+        $tokens = $route->getTokens();
+
+        $expected = new \SplFixedArray(3);
+        $expected[0] = ['id', false];
+        $expected[1] = ['name', false];
+        $expected[2] = ['date', false];
+
+        $this->assertSame('/foo/(?<id>.*)/(?<name>.*)/(?<date>.*)', $regex);
+        $this->assertInstanceOf('SplFixedArray', $tokens);
+        $this->assertEquals($expected, $tokens);
+    }
+
+    /**
+     * @covers ::init
+     * @covers ::getRegex
+     * @covers ::getTokens
+     */
+    public function testRegexWithConstraints()
+    {
+        $route = new Route('/foo/{id:\d+}', 'handler');
+        $regex = $route->getRegex();
+        $tokens = $route->getTokens();
+
+        $expected = new \SplFixedArray(1);
+        $expected[0] = ['id', false];
+
+        $this->assertSame('/foo/(?<id>\d+)', $regex);
+        $this->assertInstanceOf('SplFixedArray', $tokens);
+        $this->assertEquals($expected, $tokens);
+    }
+
+    /**
+     * @covers ::init
+     * @covers ::getRegex
+     * @covers ::getTokens
+     */
+    public function testRegexWithOptionalTokens()
+    {
+        $route = new Route('/foo/{id:\d+}{-slug?}', 'handler');
+
+        $regex = $route->getRegex();
+        $tokens = $route->getTokens();
+
+        $expected = new \SplFixedArray(2);
+        $expected[0] = ['id', false];
+        $expected[1] = ['slug', true];
+
+        $this->assertSame('/foo/(?<id>\d+)(?:-(?<slug>.*))?', $regex);
+        $this->assertInstanceOf('SplFixedArray', $tokens);
+        $this->assertEquals($expected, $tokens);
     }
 }

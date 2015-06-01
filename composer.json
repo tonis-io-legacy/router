@@ -19,7 +19,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Tonis\\Router\\": "src/"
+            "Tonis\\Router\\": ["src/", "test/"]
         }
     },
     "extra": {

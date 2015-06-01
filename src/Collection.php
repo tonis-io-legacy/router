@@ -1,17 +1,32 @@
 <?php
 namespace Tonis\Router;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Tonis\Router\Exception\RouteExistsException;
 
-final class RouteCollection
+final class Collection
 {
-    /** @var Route[] */
-    private $namedRoutes = [];
+    /** @var Match|null */
+    private $lastMatch;
+    /** @var Rule\RuleInterface[] */
+    private $rules;
     /** @var Route[] */
     private $routes = [];
-    /** @var RouteMatch */
-    private $lastMatch;
+
+    public function __construct()
+    {
+        $this->rules = [
+            new Rule\Path()
+        ];
+    }
+
+    /**
+     * @return Route[]
+     */
+    public function getRoutes()
+    {
+        return $this->routes;
+    }
 
     /**
      * @param string $path
@@ -76,27 +91,24 @@ final class RouteCollection
 
         if (null === $name) {
             $this->routes[] = $route;
+        } elseif (!isset($this->routes[$name])) {
+            $this->routes[$name] = $route;
         } else {
-            if (isset($this->namedRoutes[$name])) {
-                throw new RouteExistsException($name);
-            }
-            $this->namedRoutes[$name] = $route;
+            throw new RouteExistsException($name);
         }
-
         return $route;
     }
 
     /**
-     * @param RequestInterface $request
-     * @return RouteMatch|null
+     * @param ServerRequestInterface $request
+     * @return null|Match
      */
-    public function match(RequestInterface $request)
+    public function match(ServerRequestInterface $request)
     {
-        /** @var Route $route */
         foreach ($this->routes as $route) {
-            $match = $route->match($request);
-            
-            if ($match instanceof RouteMatch) {
+            $match = $this->matchRoute($request, $route);
+
+            if ($match instanceof Match) {
                 $this->lastMatch = $match;
                 return $match;
             }
@@ -112,19 +124,27 @@ final class RouteCollection
      */
     public function assemble($name, array $params = [])
     {
-        if (!isset($this->namedRoutes[$name])) {
+        if (!isset($this->routes[$name])) {
             throw new Exception\RouteDoesNotExistException($name);
         }
 
-        return $this->namedRoutes[$name]->assemble($params);
-    }
-
-    /**
-     * @return RouteMatch
-     */
-    public function getLastMatch()
-    {
-        return $this->lastMatch;
+        $route = $this->routes[$name];
+        if ($route->getTokens()) {
+            foreach ($route->getTokens() as $token) {
+                list($name, $optional) = $token;
+                if ($optional || isset($params[$name])) {
+                    continue;
+                }
+                throw new Exception\MissingParameterException($route->getPath(), $name);
+            }
+        }
+        $replace = function ($matches) use ($params) {
+            if (isset($params[$matches[2]])) {
+                return $matches[1] . $params[$matches[2]];
+            }
+            return '';
+        };
+        return preg_replace_callback('@{([^A-Za-z]*)([A-Za-z]+)[?]?(?::[^}]+)?}@', $replace, $route->getPath());
     }
 
     /**
@@ -135,6 +155,22 @@ final class RouteCollection
      */
     private function addWithMethod($path, $handler, $method)
     {
-        return $this->add($path, $handler)->withMethods([$method]);
+        return $this->add($path, $handler)->methods([$method]);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @param Route $route
+     * @return bool
+     */
+    private function matchRoute(ServerRequestInterface $request, Route $route)
+    {
+        $match = new Match($route);
+        foreach ($this->rules as $rule) {
+            if (!$rule($request, $match)) {
+                return false;
+            }
+        }
+        return $match;
     }
 }

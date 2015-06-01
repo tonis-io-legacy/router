@@ -1,8 +1,6 @@
 <?php
 namespace Tonis\Router;
 
-use Psr\Http\Message\RequestInterface;
-
 final class Route
 {
     /** @var string */
@@ -31,29 +29,21 @@ final class Route
     }
 
     /**
-     * @param array $params
      * @return string
-     * @throws Exception\MissingParameterException
      */
-    public function assemble(array $params = [])
+    public function getRegex()
     {
         $this->init();
-        if ($this->tokens) {
-            foreach ($this->tokens as $token) {
-                list($name, $optional) = $token;
-                if ($optional || isset($params[$name])) {
-                    continue;
-                }
-                throw new Exception\MissingParameterException($this->getPath(), $name);
-            }
-        }
-        $replace = function ($matches) use ($params) {
-            if (isset($params[$matches[2]])) {
-                return $matches[1] . $params[$matches[2]];
-            }
-            return '';
-        };
-        return preg_replace_callback('@{([^A-Za-z]*)([A-Za-z]+)[?]?(?::[^}]+)?}@', $replace, $this->path);
+        return $this->regex;
+    }
+
+    /**
+     * @return null|\SplFixedArray
+     */
+    public function getTokens()
+    {
+        $this->init();
+        return $this->tokens;
     }
 
     /**
@@ -69,7 +59,7 @@ final class Route
     /**
      * @param array $defaults
      */
-    public function withDefaults(array $defaults)
+    public function defaults(array $defaults)
     {
         $this->defaults = $defaults;
     }
@@ -78,7 +68,7 @@ final class Route
      * @param array $methods
      * @return $this
      */
-    public function withMethods(array $methods)
+    public function methods(array $methods)
     {
         foreach ($methods as &$method) {
             $method = strtoupper($method);
@@ -88,27 +78,27 @@ final class Route
     }
 
     /**
-     * @param RequestInterface $request
-     * @return null|RouteMatch
+     * @return array
      */
-    public function match(RequestInterface $request)
+    public function getDefaults()
     {
-        $this->init();
-        if (!empty($this->methods)) {
-            $method = $request->getMethod();
-            if (!in_array($method, $this->methods)) {
-                return null;
-            }
-        }
-        if (preg_match('@^' . $this->regex . '$@', $request->getUri()->getPath(), $matches)) {
-            foreach ($matches as $index => $match) {
-                if (is_numeric($index)) {
-                    unset($matches[$index]);
-                }
-            }
-            return new RouteMatch($this, array_merge($this->defaults, $matches));
-        }
-        return null;
+        return $this->defaults;
+    }
+
+    /**
+     * @return array
+     */
+    public function getAccept()
+    {
+        return $this->accept;
+    }
+
+    /**
+     * @return array
+     */
+    public function getMethods()
+    {
+        return $this->methods;
     }
 
     /**

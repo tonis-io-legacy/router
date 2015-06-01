@@ -2,7 +2,7 @@
 
 namespace Tonis\Router\Twig;
 
-use Tonis\Router\RouteCollection;
+use Tonis\Router\Collection;
 
 /**
  * @coversDefaultClass \Tonis\Router\Twig\RouteFunction
@@ -10,11 +10,12 @@ use Tonis\Router\RouteCollection;
 class RouteFunctionTest extends \PHPUnit_Framework_TestCase
 {
     /**
+     * @covers ::__construct
      * @covers ::__invoke
      */
     public function testInvoke()
     {
-        $router = new RouteCollection();
+        $router = new Collection();
         $router->add('/foo', 'handler', 'foo');
 
         $f = new RouteFunction($router, 'foo');

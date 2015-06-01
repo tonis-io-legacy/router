@@ -75,7 +75,7 @@ $router->add('foo', '/foo');
 // result is NULL
 echo $router->match('/bar');
 
-// result is an instance of Tonis\Router\RouteMatch
+// result is an instance of Tonis\Router\Match
 $match = $router->match('/foo');
 
 // output is 'foo'
@@ -83,7 +83,7 @@ echo $match->getName();
 
 $router->add('bar', '/bar/{id}');
 
-// result is an instance of Tonis\Router\RouteMatch
+// result is an instance of Tonis\Router\Match
 $match = $router->match('/bar/1');
 
 // output is 'bar'
