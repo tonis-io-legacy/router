@@ -27,6 +27,19 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::getLastMatch
+     */
+    public function testGetLastMatch()
+    {
+        $collection = new Collection();
+        $collection->add('/foo', 'handler');
+
+        $route = $collection->match($this->newRequest('/foo'));
+
+        $this->assertSame($route, $collection->getLastMatch());
+    }
+
+    /**
      * @covers ::get
      * @covers ::post
      * @covers ::patch
