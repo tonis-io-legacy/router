@@ -118,7 +118,7 @@ final class RouteCollection
         foreach ($this->routes as $route) {
             $match = $this->matchRoute($request, $route);
 
-            if ($match instanceof Route) {
+            if ($match instanceof RouteMatch) {
                 $this->lastMatch = $match;
                 return $match;
             }
