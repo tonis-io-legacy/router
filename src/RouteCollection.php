@@ -4,9 +4,9 @@ namespace Tonis\Router;
 use Psr\Http\Message\RequestInterface;
 use Tonis\Router\Exception\RouteExistsException;
 
-final class Collection
+final class RouteCollection
 {
-    /** @var Match|null */
+    /** @var Route|null */
     private $lastMatch;
     /** @var Rule\RuleInterface[] */
     private $rules;
@@ -23,7 +23,7 @@ final class Collection
     }
 
     /**
-     * @return null|Match
+     * @return null|Route
      */
     public function getLastMatch()
     {
@@ -111,14 +111,14 @@ final class Collection
 
     /**
      * @param RequestInterface $request
-     * @return null|Match
+     * @return null|RouteMatch
      */
     public function match(RequestInterface $request)
     {
         foreach ($this->routes as $route) {
             $match = $this->matchRoute($request, $route);
 
-            if ($match instanceof Match) {
+            if ($match instanceof Route) {
                 $this->lastMatch = $match;
                 return $match;
             }
@@ -172,7 +172,7 @@ final class Collection
      */
     private function matchRoute(RequestInterface $request, Route $route)
     {
-        $match = new Match($route);
+        $match = new RouteMatch($route);
         foreach ($this->rules as $rule) {
             if (!$rule($request, $match)) {
                 return false;

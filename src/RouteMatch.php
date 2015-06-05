@@ -1,10 +1,10 @@
 <?php
 namespace Tonis\Router;
 
-class Match
+class RouteMatch
 {
     /** @var array */
-    private $params;
+    private $params = [];
     /** @var Route */
     private $route;
 

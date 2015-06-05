@@ -2,14 +2,14 @@
 namespace Tonis\Router\Rule;
 
 use Psr\Http\Message\RequestInterface;
-use Tonis\Router\Match;
+use Tonis\Router\RouteMatch;
 
 class Secure implements RuleInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function __invoke(RequestInterface $request, Match $match)
+    public function __invoke(RequestInterface $request, RouteMatch $match)
     {
         $route = $match->getRoute();
 

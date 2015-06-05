@@ -2,14 +2,14 @@
 namespace Tonis\Router\Rule;
 
 use Psr\Http\Message\RequestInterface;
-use Tonis\Router\Match;
+use Tonis\Router\RouteMatch;
 
 interface RuleInterface
 {
     /**
      * @param RequestInterface $request
-     * @param Match $match
+     * @param RouteMatch $match
      * @return bool
      */
-    public function __invoke(RequestInterface $request, Match $match);
+    public function __invoke(RequestInterface $request, RouteMatch $match);
 }
