@@ -1,8 +1,8 @@
 <?php
 namespace Tonis\Router\Rule;
 
-use Tonis\Router\Match;
 use Tonis\Router\Route;
+use Tonis\Router\RouteMatch;
 use Tonis\Router\TestAsset\NewRequestTrait;
 
 /**
@@ -21,7 +21,7 @@ class PathTest extends \PHPUnit_Framework_TestCase
     public function testSimple()
     {
         $route = new Route('/foo/bar', 'handler');
-        $match = new Match($route);
+        $match = new RouteMatch($route);
 
         $this->assertTrue($this->rule->__invoke($this->newRequest('/foo/bar'), $match));
         $this->assertEmpty($match->getParams());
@@ -36,7 +36,7 @@ class PathTest extends \PHPUnit_Framework_TestCase
     public function testParamMatch()
     {
         $route = new Route('/foo/{name}', 'handler');
-        $match = new Match($route);
+        $match = new RouteMatch($route);
 
         $this->assertTrue($this->rule->__invoke($this->newRequest('/foo/bar'), $match));
         $this->assertCount(1, $match->getParams());

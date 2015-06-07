@@ -1,22 +1,20 @@
 <?php
 namespace Tonis\Router\Twig;
 
-use Tonis\Router\Collection;
+use Tonis\Router\RouteCollection;
 
-class RouteFunction extends \Twig_SimpleFunction
+final class RouteFunction extends \Twig_SimpleFunction
 {
-    /**
-     * @var \Tonis\Router\Collection
-     */
-    private $router;
+    /** @var RouteCollection */
+    private $routes;
 
     /**
-     * @param Collection $router
+     * @param RouteCollection $routes
      * @param string $name
      */
-    public function __construct(Collection $router, $name)
+    public function __construct(RouteCollection $routes, $name)
     {
-        $this->router = $router;
+        $this->routes = $routes;
         parent::__construct($name, [$this, '__invoke']);
     }
 
@@ -27,6 +25,6 @@ class RouteFunction extends \Twig_SimpleFunction
      */
     public function __invoke($name, array $params = [])
     {
-        return $this->router->assemble($name, $params);
+        return $this->routes->assemble($name, $params);
     }
 }

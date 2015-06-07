@@ -2,9 +2,9 @@
 namespace Tonis\Router;
 
 /**
- * @coversDefaultClass \Tonis\Router\Match
+ * @coversDefaultClass \Tonis\Router\RouteMatch
  */
-class MatchTest extends \PHPUnit_Framework_TestCase
+class RouteMatchTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @covers ::__construct
@@ -15,7 +15,7 @@ class MatchTest extends \PHPUnit_Framework_TestCase
     public function testAllTheThings()
     {
         $route = new Route('/foo', 'handler');
-        $match = new Match($route);
+        $match = new RouteMatch($route);
 
         $this->assertSame($route, $match->getRoute());
 
