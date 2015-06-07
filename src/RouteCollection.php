@@ -6,7 +6,7 @@ use Tonis\Router\Exception\RouteExistsException;
 
 final class RouteCollection
 {
-    /** @var Route|null */
+    /** @var RouteMatch|null */
     private $lastMatch;
     /** @var Rule\RuleInterface[] */
     private $rules;
