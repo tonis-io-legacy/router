@@ -41,51 +41,56 @@ final class RouteCollection
     /**
      * @param string $path
      * @param null $handler
+     * @param string $name
      * @return $this
      */
-    public function get($path, $handler)
+    public function get($path, $handler, $name = null)
     {
-        return $this->addWithMethod($path, $handler, 'GET');
+        return $this->addWithMethod($path, $handler, 'GET', $name);
     }
 
     /**
      * @param string $path
      * @param null $handler
+     * @param string $name
      * @return $this
      */
-    public function put($path, $handler)
+    public function put($path, $handler, $name = null)
     {
-        return $this->addWithMethod($path, $handler, 'PUT');
+        return $this->addWithMethod($path, $handler, 'PUT', $name);
     }
 
     /**
      * @param string $path
      * @param null $handler
+     * @param string $name
      * @return $this
      */
-    public function post($path, $handler)
+    public function post($path, $handler, $name = null)
     {
-        return $this->addWithMethod($path, $handler, 'POST');
+        return $this->addWithMethod($path, $handler, 'POST', $name);
     }
 
     /**
      * @param string $path
      * @param null $handler
+     * @param string $name
      * @return $this
      */
-    public function patch($path, $handler)
+    public function patch($path, $handler, $name = null)
     {
-        return $this->addWithMethod($path, $handler, 'PATCH');
+        return $this->addWithMethod($path, $handler, 'PATCH', $name);
     }
 
     /**
      * @param string $path
      * @param null $handler
+     * @param string $name
      * @return $this
      */
-    public function delete($path, $handler)
+    public function delete($path, $handler, $name = null)
     {
-        return $this->addWithMethod($path, $handler, 'DELETE');
+        return $this->addWithMethod($path, $handler, 'DELETE', $name);
     }
 
     /**
@@ -158,11 +163,12 @@ final class RouteCollection
      * @param string $path
      * @param mixed $handler
      * @param string $method
+     * @param string $name
      * @return $this
      */
-    private function addWithMethod($path, $handler, $method)
+    private function addWithMethod($path, $handler, $method, $name = null)
     {
-        return $this->add($path, $handler)->methods([$method]);
+        return $this->add($path, $handler, $name)->methods([$method]);
     }
 
     /**
