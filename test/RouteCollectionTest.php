@@ -10,13 +10,115 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
 {
     use NewRequestTrait;
 
+    /** @var RouteCollection */
+    private $routeCollection;
+
     /**
-     * @covers ::__construct
+     * @covers ::offsetExists
+     * @covers ::offsetGet
+     * @covers ::offsetSet
+     * @covers ::offsetUnset
+     */
+    public function testArrayAccess()
+    {
+        $route1 = new Route('foo', 'foo');
+        $route2 = new Route('foo', 'foo');
+
+        $this->assertFalse(isset($this->routeCollection['foo']));
+        $this->routeCollection['foo'] = $route1;
+        $this->assertTrue(isset($this->routeCollection['foo']));
+        $this->routeCollection[] = $route2;
+        $this->assertTrue(isset($this->routeCollection[0]));
+
+        $this->assertSame($route1, $this->routeCollection['foo']);
+        $this->assertSame($route2, $this->routeCollection[0]);
+
+        unset($this->routeCollection['foo']);
+        $this->assertFalse(isset($this->routeCollection['foo']));
+    }
+
+    /**
+     * @covers ::current
+     * @covers ::next
+     * @covers ::key
+     * @covers ::valid
+     * @covers ::rewind
+     */
+    public function testTraversable()
+    {
+        $route1 = new Route('foo', 'foo');
+        $route2 = new Route('bar', 'bar');
+
+        $this->routeCollection[] = $route1;
+        $this->routeCollection[] = $route2;
+
+        foreach ($this->routeCollection as $key => $route) {
+            if ($key == 0) {
+                $this->assertSame($route1, $route);
+            } else {
+                $this->assertSame($route2, $route);
+            }
+        }
+    }
+
+    /**
+     * @covers ::offsetGet
+     * @expectedException \Tonis\Router\Exception\RouteDoesNotExistException
+     * @expectedExceptionMessage The route with name "foo" does not exist
+     */
+    public function testOffsetGetThrowsExceptionForMissing()
+    {
+        $this->routeCollection['foo'];
+    }
+
+    /**
+     * @covers ::offsetSet
+     * @expectedException \Tonis\Router\Exception\RouteExistsException
+     * @expectedExceptionMessage The route with name "foo" already exists
+     */
+    public function testOffsetSetThrowsExceptionForDuplicate()
+    {
+        $this->routeCollection['foo'] = new Route('foo', 'foo');
+        $this->routeCollection['foo'] = new Route('foo', 'foo');
+    }
+
+    /**
+     * @covers ::offsetSet
+     * @covers \Tonis\Router\Exception\InvalidRouteException::__construct
+     * @expectedException \Tonis\Router\Exception\InvalidRouteException
+     * @expectedExceptionMessage Route must be an instance of Tonis\Router\Route
+     */
+    public function testOffsetSetThrowsExceptionForInvalidType()
+    {
+        $this->routeCollection['foo'] = true;
+    }
+
+    /**
+     * @covers ::offsetUnset
+     * @expectedException \Tonis\Router\Exception\RouteDoesNotExistException
+     * @expectedExceptionMessage The route with name "foo" does not exist
+     */
+    public function testOffsetUnsetThrowsExceptionForMissingRoute()
+    {
+        unset($this->routeCollection['foo']);
+    }
+
+    /**
+     * @covers ::count
+     */
+    public function testCountable()
+    {
+        $this->assertCount(0, $this->routeCollection);
+        $this->routeCollection->add('foo', 'foo');
+        $this->assertCount(1, $this->routeCollection);
+    }
+
+    /**
      * @covers ::add
      */
     public function testAddingUnnamedRoutes()
     {
-        $collection = new RouteCollection();
+        $collection = $this->routeCollection;
         $collection->add('/foo', 'handler');
         $collection->add('/bar', 'handler');
 
@@ -27,47 +129,11 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::getLastMatch
-     */
-    public function testGetLastMatch()
-    {
-        $collection = new RouteCollection();
-        $collection->add('/foo', 'handler');
-
-        $route = $collection->match($this->newRequest('/foo'));
-
-        $this->assertSame($route, $collection->getLastMatch());
-    }
-
-    /**
-     * @covers ::get
-     * @covers ::post
-     * @covers ::patch
-     * @covers ::delete
-     * @covers ::put
-     * @covers ::addWithMethod
-     * @covers ::getRoutes
-     * @dataProvider httpMethodProvider
-     *
-     * @param string $method
-     */
-    public function testHttpMethods($method)
-    {
-        $collection = new RouteCollection();
-        $collection->{$method}('/foo', 'handler');
-
-        $collection2 = new RouteCollection();
-        $collection2->add('/foo', 'handler', null)->methods([$method]);
-
-        $this->assertEquals($collection->getRoutes(), $collection2->getRoutes());
-    }
-
-    /**
      * @covers ::add
      */
     public function testAddingNamedRoutes()
     {
-        $collection = new RouteCollection();
+        $collection = $this->routeCollection;
         $collection->add('/foo', 'handler', 'foo');
         $collection->add('/bar', 'handler', 'bar');
 
@@ -86,106 +152,9 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testAddingSameRouteNameThrowsException()
     {
-        $collection = new RouteCollection();
+        $collection = $this->routeCollection;
         $collection->add('/foo', 'handler', 'foo');
         $collection->add('/foo2', 'handler', 'foo');
-    }
-
-    /**
-     * @covers ::matchRoute
-     * @covers ::match
-     */
-    public function testMatchingRoutes()
-    {
-        $collection = new RouteCollection();
-        $collection->add('/foo', 'handler');
-        $collection->add('/bar', 'handler');
-
-        $this->assertInstanceOf(RouteMatch::class, $collection->match($this->newRequest('/bar')));
-        $this->assertInstanceOf(RouteMatch::class, $collection->match($this->newRequest('/foo')));
-        $this->assertNull($collection->match($this->newRequest('/does/not/exist')));
-    }
-
-    /**
-     * @covers ::assemble
-     * @covers \Tonis\Router\Exception\RouteDoesNotExistException::__construct
-     * @expectedException \Tonis\Router\Exception\RouteDoesNotExistException
-     * @expectedExceptionMessage The route with name "foo" does not exist
-     */
-    public function testAssembleThrowsExceptionOnInvalidRouteName()
-    {
-        $routes = new RouteCollection();
-        $routes->assemble('foo');
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function testAssemble()
-    {
-        $routes = new RouteCollection();
-        $routes->add('/foo', 'handler', 'foo');
-        $this->assertSame('/foo', $routes->assemble('foo'));
-    }
-
-    /**
-     * @covers ::assemble
-     * @covers \Tonis\Router\Exception\RouteDoesNotExistException::__construct
-     * @expectedException \Tonis\Router\Exception\RouteDoesNotExistException
-     * @expectedExceptionMessage The route with name "foo" does not exist
-     */
-    public function testAssembleThrowsExceptionForMissingRoute()
-    {
-        $routes = new RouteCollection();
-        $routes->assemble('foo');
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function testAssembleWithParams()
-    {
-        $routes = new RouteCollection();
-        $routes->add('/foo/{bar}/{baz}', 'handler', 'foo');
-        $this->assertSame('/foo/1/2', $routes->assemble('foo', ['bar' => 1, 'baz' => 2]));
-    }
-
-    /**
-     * @covers ::assemble
-     * @covers \Tonis\Router\Exception\MissingParameterException::__construct
-     * @expectedException \Tonis\Router\Exception\MissingParameterException
-     * @expectedExceptionMessage Cannot assemble route "/foo/{bar}": missing required parameter "bar"
-     */
-    public function testAssembleWithParamsThrowsExceptionIfMissingParam()
-    {
-        $routes = new RouteCollection();
-        $routes->add('/foo/{bar}', 'handler', 'foo');
-        $routes->assemble('foo');
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function testAssembleWithOptionalParams()
-    {
-        $routes = new RouteCollection();
-        $routes->add('/foo{/bar?}', 'handler', 'foo');
-        $this->assertSame('/foo', $routes->assemble('foo'));
-        $this->assertSame('/foo/baz', $routes->assemble('foo', ['bar' => 'baz']));
-    }
-
-    /**
-     * @covers ::assemble
-     */
-    public function httpMethodProvider()
-    {
-        return [
-            ['GET'],
-            ['POST'],
-            ['PUT'],
-            ['DELETE'],
-            ['PATCH'],
-        ];
     }
 
     /**
@@ -199,5 +168,10 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
         $routes->setAccessible(true);
 
         return $routes->getValue($collection);
+    }
+    
+    protected function setUp()
+    {
+        $this->routeCollection = new RouteCollection;
     }
 }
