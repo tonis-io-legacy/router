@@ -18,7 +18,7 @@ class Path implements RuleInterface
                     unset($params[$index]);
                 }
             }
-            $match->setParams($params);
+            $match->setParams(array_merge($route->getDefaults(), $params));
             return true;
         }
         return false;

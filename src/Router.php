@@ -78,7 +78,7 @@ final class Router
      * @param string $path
      * @param null $handler
      * @param string $name
-     * @return $this
+     * @return Route
      */
     public function get($path, $handler, $name = null)
     {
@@ -89,7 +89,7 @@ final class Router
      * @param string $path
      * @param null $handler
      * @param string $name
-     * @return $this
+     * @return Route
      */
     public function put($path, $handler, $name = null)
     {
@@ -100,7 +100,7 @@ final class Router
      * @param string $path
      * @param null $handler
      * @param string $name
-     * @return $this
+     * @return Route
      */
     public function post($path, $handler, $name = null)
     {
@@ -111,7 +111,7 @@ final class Router
      * @param string $path
      * @param null $handler
      * @param string $name
-     * @return $this
+     * @return Route
      */
     public function patch($path, $handler, $name = null)
     {
@@ -122,7 +122,7 @@ final class Router
      * @param string $path
      * @param null $handler
      * @param string $name
-     * @return $this
+     * @return Route
      */
     public function delete($path, $handler, $name = null)
     {
@@ -152,7 +152,7 @@ final class Router
      */
     private function matchRoute(RequestInterface $request, Route $route)
     {
-        $match = new RouteMatch($route);
+        $match = new RouteMatch($rout);
         foreach ($this->rules as $rule) {
             if (!$rule($request, $match)) {
                 return false;
@@ -166,7 +166,7 @@ final class Router
      * @param mixed $handler
      * @param string $method
      * @param string $name
-     * @return $this
+     * @return Route
      */
     private function addWithMethod($path, $handler, $method, $name = null)
     {
