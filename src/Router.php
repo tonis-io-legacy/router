@@ -152,7 +152,7 @@ final class Router
      */
     private function matchRoute(RequestInterface $request, Route $route)
     {
-        $match = new RouteMatch($rout);
+        $match = new RouteMatch($route);
         foreach ($this->rules as $rule) {
             if (!$rule($request, $match)) {
                 return false;
