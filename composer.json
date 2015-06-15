@@ -12,6 +12,7 @@
         "php": ">=5.5"
     },
     "require-dev": {
+        "league/plates": "^3.0",
         "phpunit/phpunit": "^4.0",
         "squizlabs/php_codesniffer": "^1.0",
         "twig/twig": "^1.15",
