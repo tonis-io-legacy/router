@@ -40,7 +40,7 @@ class RouteExtensionTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->router = new Router;
-        $this->router->add('/foo', 'foo', 'foo');
+        $this->router->add('/foo/{id}', 'foo', 'foo');
 
         $this->ext = new RouteExtension($this->router);
     }
