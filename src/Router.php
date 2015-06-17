@@ -39,10 +39,12 @@ final class Router
         $match = $this->match($request);
         if ($match instanceof RouteMatch) {
             if (null !== $next) {
-                return $next($request->withAttribute('route.handler', $match->getRoute()->getHandler()), $response);
+                $request = $request
+                    ->withAttribute('route.handler', $match->getRoute()->getHandler())
+                    ->withAttribute('route.params', $match->getParams());
             }
         }
-        return $response;
+        return $next ? $next($request, $response) : $response;
     }
 
     /**
