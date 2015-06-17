@@ -1,7 +1,10 @@
 <?php
 namespace Tonis\Router;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Tonis\Router\TestAsset\NewRequestTrait;
+use Zend\Diactoros\Response;
 
 /**
  * @coversDefaultClass \Tonis\Router\Router
@@ -12,6 +15,31 @@ class RouterTest extends \PHPUnit_Framework_TestCase
 
     /** @var Router */
     private $router;
+
+    /**
+     * @covers ::__invoke
+     */
+    public function testMiddelwareInjectsAttributes()
+    {
+        $response = new Response();
+
+        $this->router->add('/foo', 'foo.handler');
+
+        $result = $this->router->__invoke(
+            $this->newRequest('/foo'),
+            $response,
+            function(ServerRequestInterface $newRequest) use (&$ran) {
+                $this->assertArrayHasKey('route.handler', $newRequest->getAttributes());
+                return true;
+            }
+        );
+
+        $this->assertTrue($result);
+
+        $result = $this->router->__invoke($this->newRequest('/'), $response);
+
+        $this->assertInstanceOf(ResponseInterface::class, $result);
+    }
 
     /**
      * @covers ::getLastMatch

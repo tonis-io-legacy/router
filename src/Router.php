@@ -2,6 +2,8 @@
 namespace Tonis\Router;
 
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 final class Router
 {
@@ -20,6 +22,27 @@ final class Router
             new Rule\Method(),
             new Rule\Path()
         ];
+    }
+
+    /**
+     * Middleware
+     *
+     * Sets the handler as an attribute on the $request if a route matches.
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable|null $next
+     * @return callable|ResponseInterface|ServerRequestInterface
+     */
+    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next = null)
+    {
+        $match = $this->match($request);
+        if ($match instanceof RouteMatch) {
+            if (null !== $next) {
+                return $next($request->withAttribute('route.handler', $match->getRoute()->getHandler()), $response);
+            }
+        }
+        return $response;
     }
 
     /**
