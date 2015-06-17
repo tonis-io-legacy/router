@@ -33,11 +33,12 @@ class RouterTest extends \PHPUnit_Framework_TestCase
                 return true;
             }
         );
-
         $this->assertTrue($result);
 
         $result = $this->router->__invoke($this->newRequest('/'), $response);
+        $this->assertInstanceOf(ResponseInterface::class, $result);
 
+        $result = $this->router->__invoke($this->newRequest('/foo'), $response);
         $this->assertInstanceOf(ResponseInterface::class, $result);
     }
 
