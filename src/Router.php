@@ -37,12 +37,10 @@ final class Router
     public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next = null)
     {
         $match = $this->match($request);
-        if ($match instanceof RouteMatch) {
-            if (null !== $next) {
-                $request = $request
-                    ->withAttribute('route.handler', $match->getRoute()->getHandler())
-                    ->withAttribute('route.params', $match->getParams());
-            }
+        if ($match instanceof RouteMatch && null !== $next) {
+            $request = $request
+                ->withAttribute('route.handler', $match->getRoute()->getHandler())
+                ->withAttribute('route.params', $match->getParams());
         }
         return $next ? $next($request, $response) : $response;
     }
